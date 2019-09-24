@@ -5,7 +5,7 @@ NASM    	= nasm
 DISASM 		= ndisasm
 DD      	= dd
 BEGIN_ADD 	= 0x7c00
-QEMU 		= qemu-system-x86_64
+QEMU 		= qemu-system-i386
 
 DIR_ASM = ./asm
 DIR_BIN = ./bin
