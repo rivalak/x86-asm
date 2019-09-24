@@ -3,3 +3,4 @@ img/
 vhd/
 *dis*.asm
 *.bin
+bochsout.txt
