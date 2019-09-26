@@ -1,62 +1,38 @@
 #author: rivalak
-#Time: 2019-03-25 15:32
+#Time: 2019-03-29 20:13
 
 NASM    	= nasm
 DISASM 		= ndisasm
 DD      	= dd
 BEGIN_ADD 	= 0x7c00
-QEMU 		= qemu-system-x86_64
+QEMU 		= qemu-system-i386
+
+ASMs = ./asm/c_06.asm
+BINs = ./bin/c_6.bin
 
 DIR_ASM = ./asm
 DIR_BIN = ./bin
-DIR_IMG = ./img
-DIR_VHD = ./vhd
-ALLDIRs := $(DIR_ASM) $(DIR_BIN) $(DIR_IMG) $(DIR_VHD)
+ALLDIRs := $(DIR_ASM) $(DIR_BIN)
 
-TARGET := $(DIR_BIN)/c_6.bin
+TARGET = $(BINs)
 
 DO_DIRs = \
 for i in $(ALLDIRs); \
 	do (if [ -d $$i ]; then exit 0; else mkdir $$i; fi); \
 done
 
-ASMs = $(shell ls $(DIR_ASM)/*.asm)
-BIN = $(TARGET)
-BASE_BIN = $(basename $(notdir $(BIN) ) )
-IMG = $(addsuffix .img, $(addprefix $(DIR_IMG)/, $(BASE_BIN)))
-VHD = $(addsuffix .vhd, $(addprefix $(DIR_VHD)/, $(BASE_BIN)))
-
 TARGET: $(TARGET)
-all: clean TARGET dis_asm vhd
+all: clean TARGET
 .DEFAULT_GOAL := TARGET
 
 $(TARGET): $(ASMs)
 	@$(DO_DIRs)
 	$(NASM) -f bin $< -o $@
 
-.PHONY: vhd dis_asm qemu clean
-	
-ACT_VHD = \
-$(DD) if=/dev/zero of=$(IMG) count=10000; \
-$(DD) if=$(BIN) of=$(IMG) conv=notrunc; \
-VBoxManage convertfromraw $(IMG) $(VHD) --format VHD
+.PHONY: qemu clean
 
-DO_VHD = \
-if [ -f $(VHD) ]; \
-then rm -f $(VHD); \
-$(ACT_VHD); \
-else \
-$(ACT_VHD); \
-fi
-
-vhd: $(BIN)
-	@$(DO_VHD)
-
-dis_asm: $(BIN)
-	$(DISASM) -o $(BEGIN_ADD) $(BIN) > $(DIR_ASM)/dis_c_5.asm
-
-qemu: $(BIN)
-	$(QEMU) -hda $(BIN)
+qemu: $(BINs)
+	$(QEMU) -hda $(BINs)
 
 clean:
-	-rm -fr $(DIR_BIN) $(DIR_IMG) $(DIR_VHD)
+	-rm -fr $(DIR_BIN)
