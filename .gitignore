@@ -4,3 +4,6 @@ vhd/
 *dis*.asm
 *.bin
 bochsout.txt
+*.bin
+.bochsrc
+*.o
