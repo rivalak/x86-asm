@@ -1,5 +1,7 @@
 bin/
 img/
 vhd/
-*dis*.asm
 *.bin
+.bochsrc
+bochsout.txt
+*.o
