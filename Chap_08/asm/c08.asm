@@ -1,42 +1,45 @@
-; Code of Chapter 8
-; P114
-; File name: c08.asm
-; Description: user program
-; Author: rivalak
-; Create Time: 2019-03-29 19:18
-; ================================================================================
-SECTION header vstart=0                                 ; define user program header segment
-    program_length  dd program_end
-
-    code_entry      dw start                            ; 入口点的偏移地址
-                    dd section.code_1.start             ; 入口点的段地址
-
-    realloc_tbl_len dw (header_end - code_1_segment)/4  ; 表项数
-
-    code_1_segment  dd section.code_1.start             ; segment realloc table
-    code_2_segment  dd section.code_2.start
-    data_1_segment  dd section.data_1.start
-    data_2_segment  dd section.data_2.start
-    stack_segment   dd section.stack.start
-
-    header_end:
-    ; ===============================================================================
-SECTION code_1 align=16 vstart=0                        ; 定义代码段1（16字节对齐）
-put_string:                                             ; 显示串(0结尾)。
-                                                        ; 输入：DS:BX=串地址
+         ;�����嵥8-2
+         ;�ļ�����c08.asm
+         ;�ļ�˵�����û����� 
+         ;�������ڣ�2011-5-5 18:17
+         
+;===============================================================================
+SECTION header vstart=0                     ;�����û�����ͷ���� 
+    program_length  dd program_end          ;�����ܳ���[0x00]
+    
+    ;�û�������ڵ�
+    code_entry      dw start                ;ƫ�Ƶ�ַ[0x04]
+                    dd section.code_1.start ;�ε�ַ[0x06] 
+    
+    realloc_tbl_len dw (header_end-code_1_segment)/4
+                                            ;���ض�λ�������[0x0a]
+    
+    ;���ض�λ��           
+    code_1_segment  dd section.code_1.start ;[0x0c]
+    code_2_segment  dd section.code_2.start ;[0x10]
+    data_1_segment  dd section.data_1.start ;[0x14]
+    data_2_segment  dd section.data_2.start ;[0x18]
+    stack_segment   dd section.stack.start  ;[0x1c]
+    
+    header_end:                
+    
+;===============================================================================
+SECTION code_1 align=16 vstart=0         ;��������1��16�ֽڶ��룩 
+put_string:                              ;��ʾ��(0��β)��
+                                         ;���룺DS:BX=����ַ
          mov cl,[bx]
-         or cl,cl                                       ; cl=0 ?
-         jz .exit                                       ; 是的，返回主程序
+         or cl,cl                        ;cl=0 ?
+         jz .exit                        ;�ǵģ����������� 
          call put_char
-         inc bx                                         ; 下一个字符
+         inc bx                          ;��һ���ַ� 
          jmp put_string
 
    .exit:
          ret
 
-         ; -------------------------------------------------------------------------------
-put_char:                                               ; 显示一个字符
-                                                        ; 输入：cl=字符ascii
+;-------------------------------------------------------------------------------
+put_char:                                ;��ʾһ���ַ�
+                                         ;���룺cl=�ַ�ascii
          push ax
          push bx
          push cx
@@ -44,37 +47,37 @@ put_char:                                               ; 显示一个字符
          push ds
          push es
 
-         ; 以下取当前光标位置
+         ;����ȡ��ǰ���λ��
          mov dx,0x3d4
          mov al,0x0e
          out dx,al
          mov dx,0x3d5
-         in al,dx                                       ; 高8位
+         in al,dx                        ;��8λ 
          mov ah,al
 
          mov dx,0x3d4
          mov al,0x0f
          out dx,al
          mov dx,0x3d5
-         in al,dx                                       ; 低8位
-         mov bx,ax                                      ; BX=代表光标位置的16位数
+         in al,dx                        ;��8λ 
+         mov bx,ax                       ;BX=�������λ�õ�16λ��
 
-         cmp cl,0x0d                                    ; 回车符？
-         jnz .put_0a                                    ; 不是。看看是不是换行等字符
-         mov ax,bx                                      ; 此句略显多余，但去掉后还得改书，麻烦
-         mov bl,80
+         cmp cl,0x0d                     ;�س�����
+         jnz .put_0a                     ;���ǡ������ǲ��ǻ��е��ַ� 
+         mov ax,bx                       ;�˾����Զ��࣬��ȥ���󻹵ø��飬�鷳 
+         mov bl,80                       
          div bl
          mul bl
          mov bx,ax
          jmp .set_cursor
 
  .put_0a:
-         cmp cl,0x0a                                    ; 换行符？
-         jnz .put_other                                 ; 不是，那就正常显示字符
+         cmp cl,0x0a                     ;���з���
+         jnz .put_other                  ;���ǣ��Ǿ�������ʾ�ַ� 
          add bx,80
          jmp .roll_screen
 
- .put_other:                                            ; 正常显示字符
+ .put_other:                             ;������ʾ�ַ�
          mov ax,0xb800
          mov es,ax
          shl bx,1
@@ -130,25 +133,25 @@ put_char:                                               ; 显示一个字符
 
          ; -------------------------------------------------------------------------------
   start:
-         ; 初始执行时，DS和ES指向用户程序头部段
-         mov ax,[stack_segment]                         ; 设置到用户程序自己的堆栈
+         ;��ʼִ��ʱ��DS��ESָ���û�����ͷ����
+         mov ax,[stack_segment]           ;���õ��û������Լ��Ķ�ջ 
          mov ss,ax
          mov sp,stack_end
-
-         mov ax,[data_1_segment]                        ; 设置到用户程序自己的数据段
+         
+         mov ax,[data_1_segment]          ;���õ��û������Լ������ݶ�
          mov ds,ax
 
          mov bx,msg0
-         call put_string                                ; 显示第一段信息
+         call put_string                  ;��ʾ��һ����Ϣ 
 
          push word [es:code_2_segment]
          mov ax,begin
-         push ax                                        ; 可以直接push begin,80386+
-
-         retf                                           ; 转移到代码段2执行
-
+         push ax                          ;����ֱ��push begin,80386+
+         
+         retf                             ;ת�Ƶ������2ִ�� 
+         
   continue:
-         mov ax,[es:data_2_segment]                     ; 段寄存器DS切换到数据段2
+         mov ax,[es:data_2_segment]       ;�μĴ���DS�л������ݶ�2 
          mov ds,ax
 
          mov bx,msg1
@@ -204,5 +207,3 @@ stack_end:
 ; ===============================================================================
 SECTION trail align=16
 program_end:
-
-
