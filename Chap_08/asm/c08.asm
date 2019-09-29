@@ -1,42 +1,45 @@
-; Code of Chapter 8
-; P114
-; File name: c08.asm
-; Description: user program
-; Author: rivalak
-; Create Time: 2019-03-29 19:18
-; ================================================================================
-SECTION header vstart=0                                 ; define user program header segment
-    program_length  dd program_end
-
-    code_entry      dw start                            ; å…¥å£ç‚¹çš„åç§»åœ°å€
-                    dd section.code_1.start             ; å…¥å£ç‚¹çš„æ®µåœ°å€
-
-    realloc_tbl_len dw (header_end - code_1_segment)/4  ; è¡¨é¡¹æ•°
-
-    code_1_segment  dd section.code_1.start             ; segment realloc table
-    code_2_segment  dd section.code_2.start
-    data_1_segment  dd section.data_1.start
-    data_2_segment  dd section.data_2.start
-    stack_segment   dd section.stack.start
-
-    header_end:
-    ; ===============================================================================
-SECTION code_1 align=16 vstart=0                        ; å®šä¹‰ä»£ç æ®µ1ï¼ˆ16å­—èŠ‚å¯¹é½ï¼‰
-put_string:                                             ; æ˜¾ç¤ºä¸²(0ç»“å°¾)ã€‚
-                                                        ; è¾“å…¥ï¼šDS:BX=ä¸²åœ°å€
+         ;´úÂëÇåµ¥8-2
+         ;ÎÄ¼şÃû£ºc08.asm
+         ;ÎÄ¼şËµÃ÷£ºÓÃ»§³ÌĞò 
+         ;´´½¨ÈÕÆÚ£º2011-5-5 18:17
+         
+;===============================================================================
+SECTION header vstart=0                     ;¶¨ÒåÓÃ»§³ÌĞòÍ·²¿¶Î 
+    program_length  dd program_end          ;³ÌĞò×Ü³¤¶È[0x00]
+    
+    ;ÓÃ»§³ÌĞòÈë¿Úµã
+    code_entry      dw start                ;Æ«ÒÆµØÖ·[0x04]
+                    dd section.code_1.start ;¶ÎµØÖ·[0x06] 
+    
+    realloc_tbl_len dw (header_end-code_1_segment)/4
+                                            ;¶ÎÖØ¶¨Î»±íÏî¸öÊı[0x0a]
+    
+    ;¶ÎÖØ¶¨Î»±í           
+    code_1_segment  dd section.code_1.start ;[0x0c]
+    code_2_segment  dd section.code_2.start ;[0x10]
+    data_1_segment  dd section.data_1.start ;[0x14]
+    data_2_segment  dd section.data_2.start ;[0x18]
+    stack_segment   dd section.stack.start  ;[0x1c]
+    
+    header_end:                
+    
+;===============================================================================
+SECTION code_1 align=16 vstart=0         ;¶¨Òå´úÂë¶Î1£¨16×Ö½Ú¶ÔÆë£© 
+put_string:                              ;ÏÔÊ¾´®(0½áÎ²)¡£
+                                         ;ÊäÈë£ºDS:BX=´®µØÖ·
          mov cl,[bx]
-         or cl,cl                                       ; cl=0 ?
-         jz .exit                                       ; æ˜¯çš„ï¼Œè¿”å›ä¸»ç¨‹åº
+         or cl,cl                        ;cl=0 ?
+         jz .exit                        ;ÊÇµÄ£¬·µ»ØÖ÷³ÌĞò 
          call put_char
-         inc bx                                         ; ä¸‹ä¸€ä¸ªå­—ç¬¦
+         inc bx                          ;ÏÂÒ»¸ö×Ö·û 
          jmp put_string
 
    .exit:
          ret
 
-         ; -------------------------------------------------------------------------------
-put_char:                                               ; æ˜¾ç¤ºä¸€ä¸ªå­—ç¬¦
-                                                        ; è¾“å…¥ï¼šcl=å­—ç¬¦ascii
+;-------------------------------------------------------------------------------
+put_char:                                ;ÏÔÊ¾Ò»¸ö×Ö·û
+                                         ;ÊäÈë£ºcl=×Ö·ûascii
          push ax
          push bx
          push cx
@@ -44,48 +47,48 @@ put_char:                                               ; æ˜¾ç¤ºä¸€ä¸ªå­—ç¬¦
          push ds
          push es
 
-         ; ä»¥ä¸‹å–å½“å‰å…‰æ ‡ä½ç½®
+         ;ÒÔÏÂÈ¡µ±Ç°¹â±êÎ»ÖÃ
          mov dx,0x3d4
          mov al,0x0e
          out dx,al
          mov dx,0x3d5
-         in al,dx                                       ; é«˜8ä½
+         in al,dx                        ;¸ß8Î» 
          mov ah,al
 
          mov dx,0x3d4
          mov al,0x0f
          out dx,al
          mov dx,0x3d5
-         in al,dx                                       ; ä½8ä½
-         mov bx,ax                                      ; BX=ä»£è¡¨å…‰æ ‡ä½ç½®çš„16ä½æ•°
+         in al,dx                        ;µÍ8Î» 
+         mov bx,ax                       ;BX=´ú±í¹â±êÎ»ÖÃµÄ16Î»Êı
 
-         cmp cl,0x0d                                    ; å›è½¦ç¬¦ï¼Ÿ
-         jnz .put_0a                                    ; ä¸æ˜¯ã€‚çœ‹çœ‹æ˜¯ä¸æ˜¯æ¢è¡Œç­‰å­—ç¬¦
-         mov ax,bx                                      ; æ­¤å¥ç•¥æ˜¾å¤šä½™ï¼Œä½†å»æ‰åè¿˜å¾—æ”¹ä¹¦ï¼Œéº»çƒ¦
-         mov bl,80
+         cmp cl,0x0d                     ;»Ø³µ·û£¿
+         jnz .put_0a                     ;²»ÊÇ¡£¿´¿´ÊÇ²»ÊÇ»»ĞĞµÈ×Ö·û 
+         mov ax,bx                       ;´Ë¾äÂÔÏÔ¶àÓà£¬µ«È¥µôºó»¹µÃ¸ÄÊé£¬Âé·³ 
+         mov bl,80                       
          div bl
          mul bl
          mov bx,ax
          jmp .set_cursor
 
  .put_0a:
-         cmp cl,0x0a                                    ; æ¢è¡Œç¬¦ï¼Ÿ
-         jnz .put_other                                 ; ä¸æ˜¯ï¼Œé‚£å°±æ­£å¸¸æ˜¾ç¤ºå­—ç¬¦
+         cmp cl,0x0a                     ;»»ĞĞ·û£¿
+         jnz .put_other                  ;²»ÊÇ£¬ÄÇ¾ÍÕı³£ÏÔÊ¾×Ö·û 
          add bx,80
          jmp .roll_screen
 
- .put_other:                                            ; æ­£å¸¸æ˜¾ç¤ºå­—ç¬¦
+ .put_other:                             ;Õı³£ÏÔÊ¾×Ö·û
          mov ax,0xb800
          mov es,ax
          shl bx,1
          mov [es:bx],cl
 
-         ; ä»¥ä¸‹å°†å…‰æ ‡ä½ç½®æ¨è¿›ä¸€ä¸ªå­—ç¬¦
+         ;ÒÔÏÂ½«¹â±êÎ»ÖÃÍÆ½øÒ»¸ö×Ö·û
          shr bx,1
          add bx,1
 
  .roll_screen:
-         cmp bx,2000                                    ; å…‰æ ‡è¶…å‡ºå±å¹•ï¼Ÿæ»šå±
+         cmp bx,2000                     ;¹â±ê³¬³öÆÁÄ»£¿¹öÆÁ
          jl .set_cursor
 
          mov ax,0xb800
@@ -96,7 +99,7 @@ put_char:                                               ; æ˜¾ç¤ºä¸€ä¸ªå­—ç¬¦
          mov di,0x00
          mov cx,1920
          rep movsw
-         mov bx,3840                                    ; æ¸…é™¤å±å¹•æœ€åº•ä¸€è¡Œ
+         mov bx,3840                     ;Çå³ıÆÁÄ»×îµ×Ò»ĞĞ
          mov cx,80
  .cls:
          mov word[es:bx],0x0720
@@ -128,45 +131,45 @@ put_char:                                               ; æ˜¾ç¤ºä¸€ä¸ªå­—ç¬¦
 
          ret
 
-         ; -------------------------------------------------------------------------------
+;-------------------------------------------------------------------------------
   start:
-         ; åˆå§‹æ‰§è¡Œæ—¶ï¼ŒDSå’ŒESæŒ‡å‘ç”¨æˆ·ç¨‹åºå¤´éƒ¨æ®µ
-         mov ax,[stack_segment]                         ; è®¾ç½®åˆ°ç”¨æˆ·ç¨‹åºè‡ªå·±çš„å †æ ˆ
+         ;³õÊ¼Ö´ĞĞÊ±£¬DSºÍESÖ¸ÏòÓÃ»§³ÌĞòÍ·²¿¶Î
+         mov ax,[stack_segment]           ;ÉèÖÃµ½ÓÃ»§³ÌĞò×Ô¼ºµÄ¶ÑÕ» 
          mov ss,ax
          mov sp,stack_end
-
-         mov ax,[data_1_segment]                        ; è®¾ç½®åˆ°ç”¨æˆ·ç¨‹åºè‡ªå·±çš„æ•°æ®æ®µ
+         
+         mov ax,[data_1_segment]          ;ÉèÖÃµ½ÓÃ»§³ÌĞò×Ô¼ºµÄÊı¾İ¶Î
          mov ds,ax
 
          mov bx,msg0
-         call put_string                                ; æ˜¾ç¤ºç¬¬ä¸€æ®µä¿¡æ¯
+         call put_string                  ;ÏÔÊ¾µÚÒ»¶ÎĞÅÏ¢ 
 
          push word [es:code_2_segment]
          mov ax,begin
-         push ax                                        ; å¯ä»¥ç›´æ¥push begin,80386+
-
-         retf                                           ; è½¬ç§»åˆ°ä»£ç æ®µ2æ‰§è¡Œ
-
+         push ax                          ;¿ÉÒÔÖ±½Ópush begin,80386+
+         
+         retf                             ;×ªÒÆµ½´úÂë¶Î2Ö´ĞĞ 
+         
   continue:
-         mov ax,[es:data_2_segment]                     ; æ®µå¯„å­˜å™¨DSåˆ‡æ¢åˆ°æ•°æ®æ®µ2
+         mov ax,[es:data_2_segment]       ;¶Î¼Ä´æÆ÷DSÇĞ»»µ½Êı¾İ¶Î2 
          mov ds,ax
-
+         
          mov bx,msg1
-         call put_string                                ; æ˜¾ç¤ºç¬¬äºŒæ®µä¿¡æ¯
+         call put_string                  ;ÏÔÊ¾µÚ¶ş¶ÎĞÅÏ¢ 
 
-         jmp $
+         jmp $ 
 
-         ; ===============================================================================
-SECTION code_2 align=16 vstart=0                        ; å®šä¹‰ä»£ç æ®µ2ï¼ˆ16å­—èŠ‚å¯¹é½ï¼‰
+;===============================================================================
+SECTION code_2 align=16 vstart=0          ;¶¨Òå´úÂë¶Î2£¨16×Ö½Ú¶ÔÆë£©
 
   begin:
          push word [es:code_1_segment]
          mov ax,continue
-         push ax                                        ; å¯ä»¥ç›´æ¥push continue,80386+
-
-         retf                                           ; è½¬ç§»åˆ°ä»£ç æ®µ1æ¥ç€æ‰§è¡Œ
-
-                                                        ; ===============================================================================
+         push ax                          ;¿ÉÒÔÖ±½Ópush continue,80386+
+         
+         retf                             ;×ªÒÆµ½´úÂë¶Î1½Ó×ÅÖ´ĞĞ 
+         
+;===============================================================================
 SECTION data_1 align=16 vstart=0
 
     msg0 db '  This is NASM - the famous Netwide Assembler. '
@@ -187,22 +190,20 @@ SECTION data_1 align=16 vstart=0
          db '     ... ...(Some other codes)',0x0d,0x0a,0x0d,0x0a
          db 0
 
-         ; ===============================================================================
+;===============================================================================
 SECTION data_2 align=16 vstart=0
 
     msg1 db '  The above contents is written by LeeChung. '
          db '2011-05-06'
          db 0
 
-         ; ===============================================================================
+;===============================================================================
 SECTION stack align=16 vstart=0
-
+           
          resb 256
 
-stack_end:
+stack_end:  
 
-; ===============================================================================
+;===============================================================================
 SECTION trail align=16
 program_end:
-
-

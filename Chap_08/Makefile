@@ -6,6 +6,8 @@ DISASM 		= ndisasm
 DD      	= dd
 BEGIN_ADD 	= 0x7c00
 QEMU 		= qemu-system-x86_64
+BOCHS   = bochs
+BXIMAGE = bximage
 
 DIR_ASM = ./asm
 DIR_BIN = ./bin
@@ -21,8 +23,9 @@ for i in $(ALLDIRs); \
 done
 
 ASMs = $(wildcard $(DIR_ASM)/*.asm)
-BIN = $(patsubst %.asm,$(DIR_BIN)/%.bin,$(notdir $(ASMs)))
+BINs = $(patsubst %.asm,$(DIR_BIN)/%.bin,$(notdir $(ASMs)))
 IMG = $(DIR_IMG)/chap_8.img
+BXIMG = $(DIR_IMG)/c_8bx.img
 VHD = $(DIR_VHD)/chap_8.vhd
 
 TARGET: $(TARGET)
@@ -47,8 +50,14 @@ else \
 $(ACT_VHD); \
 fi
 
-$(TARGET): $(BIN)
+$(TARGET): $(BINs)
 	@$(DO_VHD)
+
+$(bochsimg): $(BINs)
+	@$(BXIMAGE) -hd -size=5 -q $(BXIMG)
+	@$(DD) if=$(DIR_BIN)/c08_mbr.bin of=$(BXIMG) conv=notrunc
+	@$(DD) if=$(DIR_BIN)/c08.bin of=$(BXIMG) seek=100 conv=notrunc
+
 
 .PHONY: qemu clean
 
@@ -57,6 +66,9 @@ $(TARGET): $(BIN)
 
 qemu: $(VHD)
 	$(QEMU) -hda $(VHD)
+
+bochs: $(bochsimg)
+	$(BOCHS)
 
 clean:
 	-rm -fr $(DIR_BIN) $(DIR_IMG) $(DIR_VHD)
