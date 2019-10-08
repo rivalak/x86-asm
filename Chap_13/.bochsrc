@@ -1,0 +1,10 @@
+config_interface: textconfig
+
+megs: 32
+romimage: file=/usr/share/bochs/BIOS-bochs-latest
+
+boot: disk
+ata0-master: type=disk, path="./img/c_13bx.img", cylinders=10, heads=16, spt=63
+
+log: ./bochsout.txt
+mouse: enabled=0

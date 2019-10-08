@@ -18,13 +18,16 @@
   ```
 
 ### 1.2 使用 bochs 调试
-> 如果不明白请查看 [参考4]
-* ```s
+> 如果不明白请查看 [<u>参考4 - bochs 安装、配置和使用</u>](https://blog.csdn.net/Rivalak/article/details/101427828)  
+
+  ```s
   $ make bochs
+
+  1. 一直回车默认选项创建 bximage
+  2. 选择选项 "2. Read options from..."
+  3. 输入 .bochsrc 文件所在目录
+  4. 回车启动 bochs
   ```
-  * 选择选项 "2. Read options from..."
-  * 输入 .bochsrc 文件所在目录
-  * 回车启动 bochs
 
 ## 2 References
 
